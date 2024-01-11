@@ -13,12 +13,43 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
-    {
-        $products = Product::paginate(10);
-        return view('products.index', compact('products'));
+   
 
+    public function index(Request $request)
+{
+     // 企業名の一覧を取得
+     $companies = Company::pluck('company_name', 'id');
+    // Productモデルに基づいてクエリビルダを初期化
+    $query = Product::query();
+    // この行の後にクエリを逐次構築していきます。
+    // そして、最終的にそのクエリを実行するためのメソッド（例：get(), first(), paginate() など）を呼び出すことで、データベースに対してクエリを実行します。
+
+    // 商品名の検索キーワードがある場合、そのキーワードを含む商品をクエリに追加
+    if($search = $request->search){
+        $query->where('product_name', 'LIKE', "%{$search}%");
     }
+    // 企業名が選択されている場合、その企業に絞り込み
+    if ($companyId = $request->company_id) {
+        $query->where('company_id', $companyId);
+    }
+
+    // 上記の条件(クエリ）に基づいて商品を取得し、10件ごとのページネーションを適用
+    $products = $query->paginate(10);
+
+    // 商品一覧ビューを表示し、取得した商品情報をビューに渡す
+    return view('products.index', [
+        'products' => $products,
+        'companies' => $companies,
+    ]);
+}
+
+
+
+
+
+
+
+
 
     /**
      * Show the form for creating a new resource.
@@ -60,10 +91,9 @@ class ProductController extends Controller
         // リクエストに画像が含まれている場合、その画像を保存
         if($request->hasFile('img_path')){ 
             $filename = $request->img_path->getClientOriginalName();
-            $filePath = $request->img_path->store('products', 'public');
+            $filePath = $request->img_path->storeAs('public/products', $filename);
             //$filePath = $request->img_path->storeAs('products', $filename, 'public');上記に変更
             $product->img_path = 'storage/products/' . $filename;
-            $product->img_path = $filePath;
             //$product->img_path = '/storage/' . $filePath; 上記に変更
             \Illuminate\Support\Facades\Log::info('Image saved: ' . $product->img_path);  // 保存処理が成功したかどうか確認するためにログに出力
         }

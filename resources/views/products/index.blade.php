@@ -8,8 +8,15 @@
     <form action="{{ route('products.index') }}" method="GET">
 
     @csrf
-
-        <input type="text" name="keyword" placeholder="検索キーワード">
+    <!-- value 属性を追加して、初期値を空に設定 -->
+        <input type="text" name="search"  value="{{ request('search') }}" placeholder="検索キーワード" style="margin-right: 20px">
+         <!-- 企業名のセレクトボックス -->
+    <select name="company_id" style="margin-right: 20px">
+        <option value="" >メーカー名</option>
+        @foreach($companies as $companyId => $companyName)
+            <option value="{{ $companyId }}">{{ $companyName }}</option>
+        @endforeach
+    </select>
         <input type="submit" value="検索">
     </form>
     </div>
@@ -31,9 +38,7 @@
             @foreach ($products as $product)
                 <tr>
                     <td>{{ $product->id}}</td>
-                    <td><img src="{{ asset('storage/app/public/products/' . $product->img_path) }}" alt="商品画像" width="100"></td> 
-                    <!-- <img src="{{ asset($product->img_path) }}" alt="商品画像" width="100">-->
-
+                    <td><img src="{{ asset($product->img_path) }}" alt="商品画像" width="100"></td> 
                     <td>{{ $product->product_name }}</td>
                     <td>{{ $product->price }}</td>
                     <td>{{ $product->stock }}</td>
